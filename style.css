@@ -225,3 +225,31 @@ header h1 {
 .hidden {
   display: none;
 }
+
+.guessed-letters-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+}
+
+.guessed-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.guessed-badge.hit {
+  background-color: #dcfce7;
+  color: var(--success-color);
+  border: 1px solid #86efac;
+}
+
+.guessed-badge.miss {
+  background-color: #fee2e2;
+  color: var(--danger-color);
+  border: 1px solid #fca5a5;
+}

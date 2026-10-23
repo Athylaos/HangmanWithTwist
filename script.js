@@ -21,13 +21,13 @@ const gameStats = {
     secretWord: "",
     guessedLetters: new Set(),
     lives: MAX_LIVES,
-    lastPickedLetter: "",
     isGameOver: false
 };
 
 const secretWordContainer = document.getElementById("secret-word-container");
 const livesCountDisplay = document.getElementById("lives-count");
 const hangmanSvg = document.getElementById("hangman-svg");
+const guessedLettersContainer = document.getElementById("guessed-letters-container");
 const chainContainer = document.getElementById("word-chain-container");
 const messageBox = document.getElementById("message-box");
 
@@ -65,7 +65,6 @@ function initGame() {
 
     gameStats.guessedLetters.clear();
     gameStats.lives = MAX_LIVES;
-    gameStats.lastPickedLetter = "";
     gameStats.isGameOver = false;
 
     livesCountDisplay.textContent = gameStats.lives;
@@ -74,6 +73,7 @@ function initGame() {
 
     renderSecretWord();
     renderHangman();
+    renderGuessedLetters();
 
     createNewInputRow("");
 }
@@ -127,6 +127,18 @@ function renderHangman() {
     }
 
     hangmanSvg.innerHTML = svgContent;
+}
+
+function renderGuessedLetters() {
+    guessedLettersContainer.innerHTML = "";
+
+    gameStats.guessedLetters.forEach((char) => {
+        const badge = document.createElement("span");
+        const isHit = gameStats.secretWord.includes(char);
+        badge.className = `guessed-badge ${isHit ? "hit" : "miss"}`;
+        badge.textContent = char;
+        guessedLettersContainer.appendChild(badge);
+    });
 }
 
 function createNewInputRow(startingLetter) {
@@ -189,7 +201,8 @@ function createNewInputRow(startingLetter) {
             
             [...word].forEach((char) => gameStats.guessedLetters.add(char));
             renderSecretWord();
-            
+            renderGuessedLetters();
+
             row.className = "chain-row completed";
             row.innerHTML = `<span class="word-label">${word}</span>
                              <span class="picked-badge">Uhádnuto celé slovo!</span>`;
@@ -249,7 +262,6 @@ function handleLetterPick(row, word, pickedLetter) {
     if (gameStats.isGameOver) return;
 
     gameStats.guessedLetters.add(pickedLetter);
-    gameStats.lastPickedLetter = pickedLetter;
     
     row.className = "chain-row completed";
     row.innerHTML = `<span class="word-label">${word}</span>
@@ -265,6 +277,7 @@ function handleLetterPick(row, word, pickedLetter) {
     livesCountDisplay.textContent = gameStats.lives;
     renderSecretWord();
     renderHangman();
+    renderGuessedLetters();
     
     checkGameEnd();
     
