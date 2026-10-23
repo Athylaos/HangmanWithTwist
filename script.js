@@ -31,23 +31,57 @@ const hangmanSvg = document.getElementById("hangman-svg");
 const chainContainer = document.getElementById("word-chain-container");
 const messageBox = document.getElementById("message-box");
 
+let validWordsSet = new Set();
+let secretWordsList = [];
+
+/*
+ AI Generated
+ Model: Gemini 3.6 Flash
+*/
+async function loadGameData() {
+    try {
+        const dictResponse = await fetch("words.txt");
+        const dictText = await dictResponse.text();
+        validWordsSet = new Set(
+            dictText.split(/\r?\n/).map(w => w.trim().toUpperCase()).filter(Boolean)
+        );
+
+        const secretResponse = await fetch("secret_words.json");
+        secretWordsList = await secretResponse.json();
+
+    } catch (error) {
+        console.error("Chyba při načítání dat:", error);
+    }
+}
+
 function initGame() {
-    const randomIndex = Math.floor(Math.random() * SECRET_WORDS.length);
-    gameStats.secretWord = SECRET_WORDS[randomIndex].toUpperCase();
+    if (secretWordsList.length > 0) {
+        const randomIndex = Math.floor(Math.random() * secretWordsList.length);
+        gameStats.secretWord = secretWordsList[randomIndex].toUpperCase();
+    } else {
+        const randomIndex = Math.floor(Math.random() * SECRET_WORDS.length);
+        gameStats.secretWord = SECRET_WORDS[randomIndex].toUpperCase();
+    }
+
     gameStats.guessedLetters.clear();
     gameStats.lives = MAX_LIVES;
     gameStats.lastPickedLetter = "";
     gameStats.isGameOver = false;
-    
+
     livesCountDisplay.textContent = gameStats.lives;
     chainContainer.innerHTML = "";
     hideMessage();
 
     renderSecretWord();
     renderHangman();
-    
+
     createNewInputRow("");
 }
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadGameData();
+    initGame();
+});
 
 function renderSecretWord() {
     secretWordContainer.innerHTML = "";
@@ -136,6 +170,11 @@ function createNewInputRow(startingLetter) {
 
         if (startingLetter && word[0] !== startingLetter) {
             errorSpan.textContent = `Slovo musí začínat na písmeno "${startingLetter}"!`;
+            return;
+        }
+
+        if (validWordsSet.size > 0 && !validWordsSet.has(word)) {
+            errorSpan.textContent = `Slovo "${word}" není v databázi českých slov!`;
             return;
         }
 
@@ -270,5 +309,3 @@ function addRestartButton() {
     messageBox.appendChild(document.createElement("br"));
     messageBox.appendChild(restartBtn);
 }
-
-document.addEventListener("DOMContentLoaded", initGame);
